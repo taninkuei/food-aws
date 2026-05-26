@@ -99,7 +99,7 @@
       .then(function (data) {
         const summaries = (data.summaries || []).reverse();
         renderWeekChart(summaries);
-        renderWeekStats(summaries);
+        renderWeekDays(summaries);
       });
   }
 
@@ -147,15 +147,46 @@
     });
   }
 
-  function renderWeekStats(summaries) {
-    const container = document.getElementById('weekStats');
-    container.innerHTML = summaries.slice().reverse().map(function (s) {
-      return '<div class="week-stat-row">' +
-        '<div><div class="week-stat-date">' + fmtDate(s.date) + '</div>' +
-        '<div class="week-stat-macros">P ' + (s.totalProtein || 0) + 'g · C ' + (s.totalCarbs || 0) + 'g · F ' + (s.totalFat || 0) + 'g</div></div>' +
-        '<div class="week-stat-cals">' + (s.totalCalories || 0) + ' kcal</div>' +
+  function renderWeekDays(summaries) {
+    const container = document.getElementById('weekDays');
+    // summaries is oldest→newest after .reverse() in loadWeek; show newest first
+    const rows = summaries.slice().reverse();
+    container.innerHTML = rows.map(function (s) {
+      const cal = s.totalCalories || 0;
+      const pro = s.totalProtein || 0;
+      const carb = s.totalCarbs || 0;
+      const fat = s.totalFat || 0;
+      const total = pro + carb + fat || 1;
+      const pPct = Math.round(pro / total * 100);
+      const cPct = Math.round(carb / total * 100);
+      const fPct = 100 - pPct - cPct;
+      const isToday = s.date === todayStr();
+      return '<div class="week-day-row' + (isToday ? ' is-today' : '') + '" data-date="' + s.date + '">' +
+        '<div class="week-day-left">' +
+        '<div class="week-day-label">' + fmtDate(s.date) + (isToday ? ' <span class="today-badge">Today</span>' : '') + '</div>' +
+        '<div class="week-day-sub">' + s.date + '</div>' +
+        (cal > 0
+          ? '<div class="macro-bar"><div class="macro-bar-p" style="width:' + pPct + '%"></div><div class="macro-bar-c" style="width:' + cPct + '%"></div><div class="macro-bar-f" style="width:' + fPct + '%"></div></div>'
+          : '<div class="week-day-empty">No entries</div>') +
+        (cal > 0 ? '<div class="week-day-macros">P ' + pro + 'g · C ' + carb + 'g · F ' + fat + 'g</div>' : '') +
+        '</div>' +
+        '<div class="week-day-right">' +
+        (cal > 0 ? '<span class="week-day-cals">' + cal + '</span><span class="week-day-kcal">kcal</span>' : '<span class="week-day-zero">—</span>') +
+        '<span class="week-day-arrow">›</span>' +
+        '</div>' +
         '</div>';
     }).join('');
+
+    container.querySelectorAll('.week-day-row').forEach(function (row) {
+      row.addEventListener('click', function () {
+        currentDate = row.dataset.date;
+        document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.add('hidden'); });
+        document.querySelector('[data-tab="today"]').classList.add('active');
+        document.getElementById('tab-today').classList.remove('hidden');
+        loadDay(currentDate);
+      });
+    });
   }
 
   // Touch swipe support

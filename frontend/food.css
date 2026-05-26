@@ -272,18 +272,71 @@ body {
   letter-spacing: 0.5px;
 }
 
-.week-stats { display: flex; flex-direction: column; gap: 8px; }
+.week-days { display: flex; flex-direction: column; gap: 8px; }
 
-.week-stat-row {
+.week-day-row {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.week-day-row:active { background: var(--surface2); }
+.week-day-row.is-today {
+  border-color: var(--accent);
+  background: rgba(108, 99, 255, 0.08);
 }
 
-.week-stat-date { font-size: 14px; color: var(--text-muted); }
-.week-stat-cals { font-size: 16px; font-weight: 700; color: var(--text); }
-.week-stat-macros { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.week-day-left { flex: 1; min-width: 0; }
+.week-day-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.today-badge {
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.week-day-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; margin-bottom: 6px; }
+.week-day-macros { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+.week-day-empty { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+.macro-bar {
+  display: flex;
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--border);
+  width: 100%;
+  max-width: 200px;
+}
+.macro-bar-p { background: var(--protein); }
+.macro-bar-c { background: var(--carbs); }
+.macro-bar-f { background: var(--fat); }
+
+.week-day-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+.week-day-cals { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
+.week-day-kcal { font-size: 10px; color: var(--text-muted); }
+.week-day-zero { font-size: 18px; color: var(--text-muted); }
+.week-day-arrow { font-size: 18px; color: var(--text-muted); margin-top: 2px; }
