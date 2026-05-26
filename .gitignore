@@ -1,0 +1,7 @@
+node_modules/
+cdk/dist/
+cdk/cdk.out/
+lambda/dist/
+frontend-dist/
+*.js.map
+.DS_Store
