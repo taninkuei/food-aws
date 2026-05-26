@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = 'foodlog-' + CACHE_VERSION;
 const STATIC_ASSETS = ['/', '/food.css', '/food.js', '/manifest.json'];
 

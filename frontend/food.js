@@ -6,7 +6,7 @@
   let weekChart = null;
 
   function todayStr() {
-    return new Date().toISOString().slice(0, 10);
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
   }
 
   function fmtDate(str) {
@@ -16,7 +16,7 @@
     if (str === today) return 'Today';
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    if (str === yesterday.toISOString().slice(0, 10)) return 'Yesterday';
+    if (str === yesterday.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' })) return 'Yesterday';
     return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
@@ -27,9 +27,9 @@
   }
 
   function shiftDate(str, days) {
-    const d = new Date(str + 'T12:00:00');
-    d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
+    const [y, m, d] = str.split('-').map(Number);
+    const dt = new Date(y, m - 1, d + days);
+    return dt.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
   }
 
   function renderTotals(entries) {
