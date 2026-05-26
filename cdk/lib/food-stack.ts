@@ -7,6 +7,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as cloudfront_origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import { Construct } from 'constructs';
 
 export interface FoodStackProps extends cdk.StackProps {
@@ -89,6 +90,12 @@ export class FoodStack extends cdk.Stack {
       signing: cloudfront.Signing.SIGV4_NO_OVERRIDE,
     });
 
+    const cert = acm.Certificate.fromCertificateArn(
+      this,
+      'FelipeTanCert',
+      'arn:aws:acm:us-east-1:585546485067:certificate/06acb532-7f0f-46b7-bb4c-b3f489b1f8e9',
+    );
+
     const distribution = new cloudfront.Distribution(this, 'FoodDistribution', {
       defaultBehavior: {
         origin: cloudfront_origins.S3BucketOrigin.withOriginAccessControl(siteBucket, {
@@ -98,6 +105,8 @@ export class FoodStack extends cdk.Stack {
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
       },
       defaultRootObject: 'index.html',
+      domainNames: ['food.felipetan.com'],
+      certificate: cert,
       errorResponses: [
         { httpStatus: 403, responseHttpStatus: 200, responsePagePath: '/index.html' },
         { httpStatus: 404, responseHttpStatus: 200, responsePagePath: '/index.html' },
