@@ -50,6 +50,7 @@
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="today">Today</button>
         <button class="tab-btn" data-tab="week">Week</button>
+        <button class="tab-btn" data-tab="calendar">Calendar</button>
       </div>
 
       <div class="tab-content" id="tab-today">
@@ -67,6 +68,21 @@
           <canvas id="weekChart"></canvas>
         </div>
         <div id="weekDays" class="week-days"></div>
+      </div>
+
+      <div class="tab-content hidden" id="tab-calendar">
+        <div class="cal-header">
+          <button class="nav-btn" id="calPrev">&#8249;</button>
+          <span class="cal-month-label" id="calMonthLabel"></span>
+          <button class="nav-btn" id="calNext">&#8250;</button>
+        </div>
+        <div class="cal-dow-row">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div id="calGrid" class="cal-grid">
+          <div class="loading-state"><div class="spinner"></div></div>
+        </div>
       </div>
     </main>
   </div>

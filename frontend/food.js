@@ -4,6 +4,8 @@
   const API = window.API_BASE || '';
   let currentDate = todayStr();
   let weekChart = null;
+  let calMonth = todayStr().slice(0, 7); // YYYY-MM
+  let calData = {}; // date → { totalCalories, entryCount }
 
   function todayStr() {
     return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
@@ -189,7 +191,93 @@
     });
   }
 
-  // Touch swipe support
+  // ── Calendar ──────────────────────────────────────────────────────────
+  function calMonthLabel(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  function shiftMonth(ym, delta) {
+    const [y, m] = ym.split('-').map(Number);
+    const d = new Date(y, m - 1 + delta, 1);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+  function loadCalendar(ym) {
+    calMonth = ym;
+    document.getElementById('calMonthLabel').textContent = calMonthLabel(ym);
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+
+    fetch(API + '/month?month=' + ym)
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        calData = {};
+        (data.days || []).forEach(function (d) { calData[d.date] = d; });
+        renderCalGrid(ym);
+      })
+      .catch(function () {
+        grid.innerHTML = '<div class="empty-state"><p>Failed to load</p></div>';
+      });
+  }
+
+  function renderCalGrid(ym) {
+    const [y, m] = ym.split('-').map(Number);
+    const firstDay = new Date(y, m - 1, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const today = todayStr();
+    const todayYM = today.slice(0, 7);
+
+    const cells = [];
+    // Leading empty cells
+    for (let i = 0; i < firstDay; i++) cells.push('<div class="cal-cell cal-empty"></div>');
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = ym + '-' + String(d).padStart(2, '0');
+      const info = calData[dateStr];
+      const cal = info ? info.totalCalories : 0;
+      const hasData = info && info.entryCount > 0;
+      const isToday = dateStr === today;
+      const isFuture = ym > todayYM || (ym === todayYM && dateStr > today);
+
+      let cls = 'cal-cell';
+      if (isToday) cls += ' cal-today';
+      if (isFuture) cls += ' cal-future';
+      if (hasData) cls += ' cal-has-data';
+
+      cells.push(
+        '<div class="' + cls + '" data-date="' + dateStr + '">' +
+        '<span class="cal-day-num">' + d + '</span>' +
+        (hasData ? '<span class="cal-cal">' + cal + '</span>' : '') +
+        '</div>'
+      );
+    }
+
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = cells.join('');
+
+    grid.querySelectorAll('.cal-cell[data-date]').forEach(function (cell) {
+      if (cell.classList.contains('cal-future')) return;
+      cell.addEventListener('click', function () {
+        currentDate = cell.dataset.date;
+        document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function (c) { c.classList.add('hidden'); });
+        document.querySelector('[data-tab="today"]').classList.add('active');
+        document.getElementById('tab-today').classList.remove('hidden');
+        loadDay(currentDate);
+      });
+    });
+  }
+
+  document.getElementById('calPrev').addEventListener('click', function () {
+    loadCalendar(shiftMonth(calMonth, -1));
+  });
+  document.getElementById('calNext').addEventListener('click', function () {
+    const next = shiftMonth(calMonth, 1);
+    if (next <= todayStr().slice(0, 7)) loadCalendar(next);
+  });
+
+  // ── Touch swipe support
   let touchStartX = 0;
   document.addEventListener('touchstart', function (e) { touchStartX = e.touches[0].clientX; }, { passive: true });
   document.addEventListener('touchend', function (e) {
@@ -225,6 +313,7 @@
       const tab = btn.dataset.tab;
       document.getElementById('tab-' + tab).classList.remove('hidden');
       if (tab === 'week') loadWeek();
+      if (tab === 'calendar') loadCalendar(calMonth);
     });
   });
 

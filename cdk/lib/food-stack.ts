@@ -78,6 +78,12 @@ export class FoodStack extends cdk.Stack {
       integration,
     });
 
+    httpApi.addRoutes({
+      path: '/month',
+      methods: [apigatewayv2.HttpMethod.GET],
+      integration,
+    });
+
     // S3 bucket for frontend
     const siteBucket = new s3.Bucket(this, 'FoodSiteBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,

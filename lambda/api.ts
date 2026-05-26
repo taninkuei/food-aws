@@ -106,5 +106,37 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
     return resp(200, { days, summaries });
   }
 
+  // GET /month?month=YYYY-MM
+  if (method === 'GET' && path === '/month') {
+    const monthParam = event.queryStringParameters?.month;
+    if (!monthParam || !/^\d{4}-\d{2}$/.test(monthParam)) {
+      return resp(400, { error: 'month param required (YYYY-MM)' });
+    }
+    const [y, m] = monthParam.split('-').map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    const dates: string[] = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      dates.push(`${monthParam}-${String(d).padStart(2, '0')}`);
+    }
+
+    const days = await Promise.all(dates.map(async (date) => {
+      const result = await ddb.send(new QueryCommand({
+        TableName: TABLE,
+        KeyConditionExpression: '#d = :date',
+        ExpressionAttributeNames: { '#d': 'date' },
+        ExpressionAttributeValues: { ':date': date },
+        ProjectionExpression: 'calories',
+      }));
+      const entries = result.Items || [];
+      return {
+        date,
+        totalCalories: entries.reduce((s: number, e: any) => s + (e.calories || 0), 0),
+        entryCount: entries.length,
+      };
+    }));
+
+    return resp(200, { month: monthParam, days });
+  }
+
   return resp(404, { error: 'Not found' });
 };
